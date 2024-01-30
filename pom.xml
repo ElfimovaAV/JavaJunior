@@ -5,8 +5,14 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>ru.geekbrains.junior</groupId>
-    <artifactId>lesson1</artifactId>
+    <artifactId>JavaJunior</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>chat-client</module>
+        <module>chat-server</module>
+    </modules>
 
     <dependencies>
         <!-- Добавляем зависимость для Jackson -->
