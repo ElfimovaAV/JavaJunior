@@ -1,9 +1,16 @@
 package ru.geekbrains.junior.chat.server;
 
-import javax.imageio.IIOException;
 import java.io.*;
 import java.net.Socket;
 import java.util.ArrayList;
+/*
+1. Разработайте простой чат на основе сокетов как это было показано на самом семинаре. Ваше приложение должно включать в себя
+сервер, который принимает сообщения от клиентов и пересылает их всем участникам чата. (Вы можете просто переписать наше приложение
+с семинара, этого будет вполне достаточно)
+
+2*. Подумайте, как организовать отправку ЛИЧНЫХ сообщений в контексте нашего чата, доработайте поддержку отправки личных сообщений,
+небольшую подсказку я дал в конце семинара.
+ */
 
 public class ClientManager implements Runnable {
 
@@ -65,7 +72,7 @@ public class ClientManager implements Runnable {
     }
 
     /**
-     * Отправка сообщения всем слушателям
+     * Доработанный метод для отправки сообщений всем слушателям и в личку
      *
      * @param message сообщение
      */
@@ -77,7 +84,7 @@ public class ClientManager implements Runnable {
 
         for (ClientManager client : clients) {
             try {
-                if (firstSymbol == '@' && wordsOfMessage.length >2) {
+                if (firstSymbol == '@' && wordsOfMessage.length > 2) {
                     String recipientName = targetWord.substring(1);
                     String[] removeRecipientName = remove(wordsOfMessage, 1);
                     String editedMessage = buildMessage(removeRecipientName);
@@ -94,36 +101,41 @@ public class ClientManager implements Runnable {
                         client.bufferedWriter.flush();
                     }
                 }
-            }
-            catch(IOException e){
-                    closeEverything(socket, bufferedReader, bufferedWriter);
-                }
-            }
-        }
-
-        private void closeEverything (Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter){
-            // Удаление клиента из коллекции
-            removeClient();
-            try {
-                // Завершаем работу буфера на чтение данных
-                if (bufferedReader != null) {
-                    bufferedReader.close();
-                }
-                // Завершаем работу буфера для записи данных
-                if (bufferedWriter != null) {
-                    bufferedWriter.close();
-                }
-                // Закрытие соединения с клиентским сокетом
-                if (socket != null) {
-                    socket.close();
-                }
             } catch (IOException e) {
-                e.printStackTrace();
+                closeEverything(socket, bufferedReader, bufferedWriter);
             }
         }
+    }
 
+    private void closeEverything(Socket socket, BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
+        // Удаление клиента из коллекции
+        removeClient();
+        try {
+            // Завершаем работу буфера на чтение данных
+            if (bufferedReader != null) {
+                bufferedReader.close();
+            }
+            // Завершаем работу буфера для записи данных
+            if (bufferedWriter != null) {
+                bufferedWriter.close();
+            }
+            // Закрытие соединения с клиентским сокетом
+            if (socket != null) {
+                socket.close();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Вспомогательный метод для удаления имени адресата в личном сообщении
+     * @param strings
+     * @param index
+     * @return
+     */
     private String[] remove(String[] strings, int index) {
-         String[] result = new String[strings.length - 1];
+        String[] result = new String[strings.length - 1];
 
         for (int i = 0; i < strings.length; i++) {
             if (i != index) {
@@ -135,6 +147,11 @@ public class ClientManager implements Runnable {
         return result;
     }
 
+    /**
+     * Вспомогательный метод для построения текста личного сообщения из массива строк
+     * @param strings
+     * @return
+     */
     private String buildMessage(String[] strings) {
         StringBuilder strBuilder = new StringBuilder();
         for (int i = 0; i < strings.length; i++) {
